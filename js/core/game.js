@@ -5,15 +5,15 @@ window.onload = function () {
 
   const keys = {};
 
-  document.addEventListener("keydown", e => keys[e.key] = true);
-  document.addEventListener("keyup", e => keys[e.key] = false);
+  document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+  document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-  // world position
   const player = {
     x: 0,
     y: 0,
     size: 40,
-    speed: 4
+    speed: 4,
+    facing: 1 // 1 = right, -1 = left
   };
 
   const camera = {
@@ -25,8 +25,14 @@ window.onload = function () {
 
     if (keys["w"]) player.y -= player.speed;
     if (keys["s"]) player.y += player.speed;
-    if (keys["a"]) player.x -= player.speed;
-    if (keys["d"]) player.x += player.speed;
+    if (keys["a"]) {
+      player.x -= player.speed;
+      player.facing = -1;
+    }
+    if (keys["d"]) {
+      player.x += player.speed;
+      player.facing = 1;
+    }
 
     // center camera on player
     camera.x = player.x - canvas.width / 2;
@@ -55,29 +61,55 @@ window.onload = function () {
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
     }
-
   }
 
   function drawPlayer() {
 
+    const screenX = player.x - camera.x;
+    const screenY = player.y - camera.y;
+    const size = player.size;
+
+    ctx.save();
+    ctx.translate(screenX, screenY);
+    ctx.scale(player.facing, 1);
+
+    // body
     ctx.fillStyle = "#3bd16f";
+    ctx.fillRect(-size/2, -size/2, size, size * 0.7);
 
-    ctx.fillRect(
-      player.x - camera.x - player.size / 2,
-      player.y - camera.y - player.size / 2,
-      player.size,
-      player.size
-    );
+    // head
+    ctx.fillStyle = "#2bb85c";
+    ctx.fillRect(size/4, -size/2 - 10, size/2, size/2);
 
+    // eye
+    ctx.fillStyle = "black";
+    ctx.fillRect(size/2, -size/2 - 5, 5, 5);
+
+    // wing
+    ctx.fillStyle = "#24994d";
+    ctx.beginPath();
+    ctx.moveTo(-size/2, -size/4);
+    ctx.lineTo(-size, -size/2);
+    ctx.lineTo(-size/2, size/4);
+    ctx.fill();
+
+    // tail
+    ctx.fillStyle = "#2bb85c";
+    ctx.beginPath();
+    ctx.moveTo(-size/2, size/4);
+    ctx.lineTo(-size, size/2);
+    ctx.lineTo(-size/2, size/2);
+    ctx.fill();
+
+    ctx.restore();
   }
 
-  function gameloop() {
+  function gameLoop() {
     update();
     drawBackground();
     drawPlayer();
-    requestAnimationFrame(gameloop);
+    requestAnimationFrame(gameLoop);
   }
 
-  gameloop();
-
+  gameLoop();
 };
