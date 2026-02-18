@@ -3,22 +3,23 @@ window.onload = function () {
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
 
+  const keys = {};
+
+  document.addEventListener("keydown", e => keys[e.key] = true);
+  document.addEventListener("keyup", e => keys[e.key] = false);
+
+  // world position
   const player = {
-    x: 480,
-    y: 270,
+    x: 0,
+    y: 0,
     size: 40,
     speed: 4
   };
 
-  const keys = {};
-
-  document.addEventListener("keydown", function (e) {
-    keys[e.key] = true;
-  });
-
-  document.addEventListener("keyup", function (e) {
-    keys[e.key] = false;
-  });
+  const camera = {
+    x: 0,
+    y: 0
+  };
 
   function update() {
 
@@ -27,17 +28,43 @@ window.onload = function () {
     if (keys["a"]) player.x -= player.speed;
     if (keys["d"]) player.x += player.speed;
 
+    // center camera on player
+    camera.x = player.x - canvas.width / 2;
+    camera.y = player.y - canvas.height / 2;
+
   }
 
-  function draw() {
+  function drawBackground() {
 
     ctx.fillStyle = "#0c1626";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    const gridSize = 64;
+    ctx.strokeStyle = "#162338";
+
+    for (let x = -camera.x % gridSize; x < canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+
+    for (let y = -camera.y % gridSize; y < canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+  }
+
+  function drawPlayer() {
+
     ctx.fillStyle = "#3bd16f";
+
     ctx.fillRect(
-      player.x - player.size / 2,
-      player.y - player.size / 2,
+      player.x - camera.x - player.size / 2,
+      player.y - camera.y - player.size / 2,
       player.size,
       player.size
     );
@@ -46,7 +73,8 @@ window.onload = function () {
 
   function gameloop() {
     update();
-    draw();
+    drawBackground();
+    drawPlayer();
     requestAnimationFrame(gameloop);
   }
 
