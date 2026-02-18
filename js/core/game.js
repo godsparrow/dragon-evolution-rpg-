@@ -8,12 +8,23 @@ window.onload = function () {
   document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
   document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
+  // ===== SPRITE LOAD =====
+  const dragon = new Image();
+  dragon.src = "assets/sprites/player/hatchling/dragon.png";
+
+  const FRAME_SIZE = 64;
+  const FRAMES_PER_ANIMATION = 4;
+  const FRAME_SPEED = 10; // lower = faster animation
+
+  let frameIndex = 0;
+  let frameCounter = 0;
+
   const player = {
     x: 0,
     y: 0,
-    size: 40,
     speed: 4,
-    facing: 1 // 1 = right, -1 = left
+    direction: "down",
+    moving: false
   };
 
   const camera = {
@@ -23,20 +34,45 @@ window.onload = function () {
 
   function update() {
 
-    if (keys["w"]) player.y -= player.speed;
-    if (keys["s"]) player.y += player.speed;
+    player.moving = false;
+
+    if (keys["w"]) {
+      player.y -= player.speed;
+      player.direction = "up";
+      player.moving = true;
+    }
+    if (keys["s"]) {
+      player.y += player.speed;
+      player.direction = "down";
+      player.moving = true;
+    }
     if (keys["a"]) {
       player.x -= player.speed;
-      player.facing = -1;
+      player.direction = "left";
+      player.moving = true;
     }
     if (keys["d"]) {
       player.x += player.speed;
-      player.facing = 1;
+      player.direction = "right";
+      player.moving = true;
     }
 
-    // center camera on player
     camera.x = player.x - canvas.width / 2;
     camera.y = player.y - canvas.height / 2;
+
+    // animation timing
+    if (player.moving) {
+      frameCounter++;
+      if (frameCounter >= FRAME_SPEED) {
+        frameCounter = 0;
+        frameIndex++;
+        if (frameIndex >= FRAMES_PER_ANIMATION) {
+          frameIndex = 0;
+        }
+      }
+    } else {
+      frameIndex = 0; // idle = first frame
+    }
 
   }
 
@@ -63,45 +99,45 @@ window.onload = function () {
     }
   }
 
+  function getRow() {
+
+    // row layout:
+    // 0 down idle
+    // 1 down walk
+    // 2 left idle
+    // 3 left walk
+    // 4 right idle
+    // 5 right walk
+    // 6 up idle
+    // 7 up walk
+
+    switch (player.direction) {
+      case "down": return player.moving ? 1 : 0;
+      case "left": return player.moving ? 3 : 2;
+      case "right": return player.moving ? 5 : 4;
+      case "up": return player.moving ? 7 : 6;
+    }
+  }
+
   function drawPlayer() {
 
     const screenX = player.x - camera.x;
     const screenY = player.y - camera.y;
-    const size = player.size;
 
-    ctx.save();
-    ctx.translate(screenX, screenY);
-    ctx.scale(player.facing, 1);
+    const row = getRow();
 
-    // body
-    ctx.fillStyle = "#3bd16f";
-    ctx.fillRect(-size/2, -size/2, size, size * 0.7);
+    ctx.drawImage(
+      dragon,
+      frameIndex * FRAME_SIZE,
+      row * FRAME_SIZE,
+      FRAME_SIZE,
+      FRAME_SIZE,
+      screenX - FRAME_SIZE / 2,
+      screenY - FRAME_SIZE / 2,
+      FRAME_SIZE,
+      FRAME_SIZE
+    );
 
-    // head
-    ctx.fillStyle = "#2bb85c";
-    ctx.fillRect(size/4, -size/2 - 10, size/2, size/2);
-
-    // eye
-    ctx.fillStyle = "black";
-    ctx.fillRect(size/2, -size/2 - 5, 5, 5);
-
-    // wing
-    ctx.fillStyle = "#24994d";
-    ctx.beginPath();
-    ctx.moveTo(-size/2, -size/4);
-    ctx.lineTo(-size, -size/2);
-    ctx.lineTo(-size/2, size/4);
-    ctx.fill();
-
-    // tail
-    ctx.fillStyle = "#2bb85c";
-    ctx.beginPath();
-    ctx.moveTo(-size/2, size/4);
-    ctx.lineTo(-size, size/2);
-    ctx.lineTo(-size/2, size/2);
-    ctx.fill();
-
-    ctx.restore();
   }
 
   function gameLoop() {
@@ -111,5 +147,8 @@ window.onload = function () {
     requestAnimationFrame(gameLoop);
   }
 
-  gameLoop();
+  dragon.onload = function () {
+    gameLoop();
+  };
+
 };
