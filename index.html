@@ -1,13 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dragon Hatchling RPG</title>
+  <title>dragon rpg</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0f1a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    canvas {
+      border: 3px solid #1c2a44;
+      image-rendering: pixelated;
+    }
+  </style>
 </head>
-<body style="margin:0; background:#0a0f1a; display:flex; justify-content:center; align-items:center; height:100vh;">
+<body>
 
-    <canvas id="game" width="960" height="540" style="border:3px solid #1c2a44;"></canvas>
+  <canvas id="game" width="960" height="540"></canvas>
 
-    <script src="js/core/game.js"></script>
+  <script src="js/core/game.js"></script>
 
 </body>
 </html>
