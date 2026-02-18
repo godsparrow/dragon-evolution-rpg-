@@ -8,13 +8,16 @@ window.onload = function () {
   document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
   document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-  // ===== SPRITE LOAD =====
   const dragon = new Image();
   dragon.src = "assets/sprites/player/hatchling/dragon.png";
 
-  const FRAME_SIZE = 64;
-  const FRAMES_PER_ANIMATION = 4;
-  const FRAME_SPEED = 10; // lower = faster animation
+  let FRAME_WIDTH;
+  let FRAME_HEIGHT;
+
+  const COLUMNS = 4;
+  const ROWS = 8;
+
+  const FRAME_SPEED = 10;
 
   let frameIndex = 0;
   let frameCounter = 0;
@@ -24,12 +27,21 @@ window.onload = function () {
     y: 0,
     speed: 4,
     direction: "down",
-    moving: false
+    moving: false,
+    scale: 0.5 // adjust size on screen
   };
 
   const camera = {
     x: 0,
     y: 0
+  };
+
+  dragon.onload = function () {
+
+    FRAME_WIDTH = Math.floor(dragon.width / COLUMNS);
+    FRAME_HEIGHT = Math.floor(dragon.height / ROWS);
+
+    gameLoop();
   };
 
   function update() {
@@ -60,20 +72,15 @@ window.onload = function () {
     camera.x = player.x - canvas.width / 2;
     camera.y = player.y - canvas.height / 2;
 
-    // animation timing
     if (player.moving) {
       frameCounter++;
       if (frameCounter >= FRAME_SPEED) {
         frameCounter = 0;
-        frameIndex++;
-        if (frameIndex >= FRAMES_PER_ANIMATION) {
-          frameIndex = 0;
-        }
+        frameIndex = (frameIndex + 1) % COLUMNS;
       }
     } else {
-      frameIndex = 0; // idle = first frame
+      frameIndex = 0;
     }
-
   }
 
   function drawBackground() {
@@ -101,16 +108,6 @@ window.onload = function () {
 
   function getRow() {
 
-    // row layout:
-    // 0 down idle
-    // 1 down walk
-    // 2 left idle
-    // 3 left walk
-    // 4 right idle
-    // 5 right walk
-    // 6 up idle
-    // 7 up walk
-
     switch (player.direction) {
       case "down": return player.moving ? 1 : 0;
       case "left": return player.moving ? 3 : 2;
@@ -126,18 +123,20 @@ window.onload = function () {
 
     const row = getRow();
 
+    const drawWidth = FRAME_WIDTH * player.scale;
+    const drawHeight = FRAME_HEIGHT * player.scale;
+
     ctx.drawImage(
       dragon,
-      frameIndex * FRAME_SIZE,
-      row * FRAME_SIZE,
-      FRAME_SIZE,
-      FRAME_SIZE,
-      screenX - FRAME_SIZE / 2,
-      screenY - FRAME_SIZE / 2,
-      FRAME_SIZE,
-      FRAME_SIZE
+      frameIndex * FRAME_WIDTH,
+      row * FRAME_HEIGHT,
+      FRAME_WIDTH,
+      FRAME_HEIGHT,
+      screenX - drawWidth / 2,
+      screenY - drawHeight / 2,
+      drawWidth,
+      drawHeight
     );
-
   }
 
   function gameLoop() {
@@ -146,9 +145,5 @@ window.onload = function () {
     drawPlayer();
     requestAnimationFrame(gameLoop);
   }
-
-  dragon.onload = function () {
-    gameLoop();
-  };
 
 };
