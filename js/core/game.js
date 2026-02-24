@@ -38,8 +38,8 @@ window.onload = function () {
 
   dragon.onload = function () {
 
-    FRAME_WIDTH = Math.floor(dragon.width / COLUMNS);
-    FRAME_HEIGHT = Math.floor(dragon.height / ROWS);
+    FRAME_WIDTH = (dragon.width / COLUMNS);
+    FRAME_HEIGHT = (dragon.height / ROWS);
 
     gameLoop();
   };
